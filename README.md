@@ -2,6 +2,12 @@
 
 Bring all the URLs that the Wayback machine knows for one or more domain names.
 
+Installation
+
+```
+ ▶ go install github.com/barisbaydur/waybackurls@latest
+```
+
 Usage Example
 
 ```
