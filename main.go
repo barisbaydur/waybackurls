@@ -73,11 +73,13 @@ func main() {
 				}
 				defer resp.Body.Close()
 				
-				if *outFile {
-					os.WriteFile(fileScanner.Text()+".txt", body, 0644)
-					log.Printf("Done: " + fileScanner.Text())
-				} else {
-					fmt.Println(string(body))
+				if string(body) != "" {
+					if *outFile {
+						os.WriteFile(fileScanner.Text()+".txt", body, 0644)
+						log.Printf("Done: " + fileScanner.Text())
+					} else {
+						fmt.Println(string(body))
+					}
 				}
 			}
 			readFile.Close()
