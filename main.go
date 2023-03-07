@@ -71,7 +71,8 @@ func main() {
 				if err != nil {
 					log.Fatalln(err)
 				}
-
+				defer resp.Body.Close()
+				
 				if *outFile {
 					os.WriteFile(fileScanner.Text()+".txt", body, 0644)
 					log.Printf("Done: " + fileScanner.Text())
