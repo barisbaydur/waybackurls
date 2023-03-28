@@ -32,34 +32,38 @@ func main() {
 
 	if *hostFile == "" && *host == "" {
 		Usage()
-		os.Exit(1)
+		os.Exit(0)
 	}
 
 	if *host != "" {
 		url := "https://web.archive.org/cdx/search/cdx?url=" + *host + "/*&output=text&fl=original&collapse=urlkey"
 		resp, err := http.Get(url)
+		if err != nil {
+			log.Fatalln(err)
+		}
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		if *outFile {
-			os.WriteFile(*host+".txt", body, 0644)
-			log.Printf("Done: " + *host)
+		if string(body) != "" {
+			if *outFile {
+				os.WriteFile(*host+".txt", body, 0644)
+				log.Printf("Done: " + *host)
+			} else {
+				fmt.Println(string(body))
+			}
 		} else {
-			fmt.Println(string(body))
+			log.Printf("No results for: " + *host)
 		}
-		os.Exit(0)
 	} else {
-
 		if _, err := os.Stat(*hostFile); os.IsNotExist(err) {
-			fmt.Println("File does not exist")
-			os.Exit(1)
+			log.Fatalln("File does not exist")
 		} else {
 			readFile, err := os.Open(*hostFile)
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				log.Fatalln(err)
 			}
+			defer readFile.Close()
 
 			fileScanner := bufio.NewScanner(readFile)
 			fileScanner.Split(bufio.ScanLines)
@@ -67,12 +71,15 @@ func main() {
 			for fileScanner.Scan() {
 				url := "https://web.archive.org/cdx/search/cdx?url=" + fileScanner.Text() + "/*&output=text&fl=original&collapse=urlkey"
 				resp, err := http.Get(url)
+				if err != nil {
+					log.Fatalln(err)
+				}
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
 					log.Fatalln(err)
 				}
 				defer resp.Body.Close()
-				
+
 				if string(body) != "" {
 					if *outFile {
 						os.WriteFile(fileScanner.Text()+".txt", body, 0644)
@@ -80,9 +87,10 @@ func main() {
 					} else {
 						fmt.Println(string(body))
 					}
+				} else {
+					log.Printf("No results for: " + fileScanner.Text())
 				}
 			}
-			readFile.Close()
 		}
 	}
 }
